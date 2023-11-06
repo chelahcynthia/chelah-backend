@@ -13,3 +13,7 @@ const UserSchema = new Schema({
       required: true,
     },
   })
+
+// create a new user
+const User = mongoose.model('user', UserSchema)
+module.exports = User
