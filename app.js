@@ -4,6 +4,8 @@ const morgan = require('morgan')
 const createError = require('http-errors')
 require('dotenv').config()
 
+const AuthRoute = require('./Routes/Auth.route')
+
 const app = express()
 
 app.get('/', async (req, res, next) => {
