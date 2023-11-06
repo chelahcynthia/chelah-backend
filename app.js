@@ -3,6 +3,7 @@ const express = require('express')
 const morgan = require('morgan')
 const createError = require('http-errors')
 require('dotenv').config()
+require('./helpers/init_mongodb')
 
 const AuthRoute = require('./Routes/Auth.route')
 
@@ -17,6 +18,7 @@ app.get('/', async (req, res, next) => {
     // Use next to execute the next middleware
     next(createError.NotFound())
   })
+  
   
 // error handling
   app.use((err, req, res, next) => {
