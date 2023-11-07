@@ -9,6 +9,10 @@ const AuthRoute = require('./Routes/Auth.route')
 
 const app = express()
 app.use(morgan('dev'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+app.use('/auth', AuthRoute)
 
 app.get('/', async (req, res, next) => {
     res.send('Hello from express.')
@@ -18,7 +22,7 @@ app.get('/', async (req, res, next) => {
     // Use next to execute the next middleware
     next(createError.NotFound())
   })
-  
+
   
 // error handling
   app.use((err, req, res, next) => {

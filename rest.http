@@ -5,6 +5,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
+  
   "email": "jhondoe@gmail.com",
   "password": "1234"
 }
@@ -15,17 +16,14 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
+  
   "email": "yourstruly267@gmail.com",
   "password": "1234"
 }
 
-###Refresh token Route
-POST http://localhost:3000/auth/refresh-token
-Content-Type: application/json
 
 
 
-###Logout Route
-DELETE http://localhost:3000/auth/logout
-Content-Type: application/json
+
+
 
