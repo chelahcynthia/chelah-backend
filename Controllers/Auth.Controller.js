@@ -1,41 +1,74 @@
-const createError = require('http-errors')
+const createError = require("http-errors");
 const User = require("../Models/User.model");
-const {authSchema} = require('../helpers/validation_schema')
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 module.exports = {
-    register: async (req, res, next) => {
-      try {
-       const result = await authSchema.validateAsync(req.body)
-        const doesExist = await User.findOne({ email: result.email })
-        if (doesExist)
-          throw createError.Conflict(`${result.email} is already been registered`)
-  
-        const user = new User(result)
-        const savedUser = await user.save()
-        const accessToken = await signAccessToken(savedUser.id)
-        const refreshToken = await signRefreshToken(savedUser.id)
-  
-        res.send({ accessToken, refreshToken })
-      } catch (error) {
-        if (error.isJoi === true) error.status = 422
-        next(error)
-      }
-    },
-    login:  async (req, res, next) => { 
-        try { 
-            const result = await authSchema.validateAsync(req.body)
-           const user = await User.findOne({ email: result.email })
-           if (!user) throw createError.NotFound('User not registered')
-            const isMatch = await user.isValidPassword(result.password)
-            if (!isMatch)
-            throw createError.Unauthorized('Username/password not valid')
-    
-        } catch (error) { 
-            if (error.isJoi === true)
-            return next(createError.BadRequest('Invalid Username/Password'))
-            next(error)
-        }
-    },
-    
+  register: async (req, res, next) => {
+    try {
+      let user = await User.findOne({ email: req.body.email });
+      console.log(user);
 
-}
+      if (user) {
+        return res.status(400).json({ message: "user with that email exists" });
+      }
+
+      user = new User({
+        email: req.body.email,
+        password: req.body.password,
+      });
+
+      await user.save();
+
+      const payload = {
+        id: user._id,
+      };
+
+      const token = await jwt.sign(payload, process.env.SECRET_KEY, {
+        expiresIn: 3600,
+      });
+
+      return res
+        .status(201)
+        .set({ token: token })
+        .json({ message: "account created" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "its not you its us" });
+    }
+  },
+  login: async (req, res, next) => {
+    const { email, password } = req.body;
+
+    try {
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(400).json({ message: "unauthorized" });
+      }
+
+      const matchPasswords = await bcrypt.compare(password, user.password);
+
+      if (!matchPasswords) {
+        return res.status(400).json({ message: "unauthorized" });
+      }
+
+      const token = jwt.sign(
+        {
+          id: user._id,
+        },
+        process.env.SECRET_KEY,
+        { expiresIn: 3600 }
+      );
+
+      return res
+        .status(200)
+        .set({ token: token })
+        .json({ message: "logged in" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "its not you its us" });
+    }
+  },
+};
